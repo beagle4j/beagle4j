@@ -1,0 +1,15 @@
+# Normalise line endings in the repository so that contributors on Windows and on
+# Unix do not produce diffs that touch every line of a file they barely edited.
+* text=auto eol=lf
+
+*.java   text eol=lf diff=java
+*.xml    text eol=lf
+*.yml    text eol=lf
+*.md     text eol=lf
+
+*.bat    text eol=crlf
+*.cmd    text eol=crlf
+
+*.jar    binary
+*.png    binary
+*.gif    binary
