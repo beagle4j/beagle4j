@@ -26,7 +26,17 @@ public enum FindingType {
     SLOW_QUERY(
             "Slow query",
             "This statement exceeded the configured latency budget. Check the execution "
-                    + "plan; most cases are a missing index or an unbounded scan.");
+                    + "plan; most cases are a missing index or an unbounded scan."),
+
+    WRITE_OUTSIDE_TRANSACTION(
+            "Writes outside a transaction",
+            "Several different writes ran in one unit of work with autocommit on, so they "
+                    + "were not atomic: a failure partway through leaves the earlier ones "
+                    + "committed. If you expected a transaction here, it did not happen. "
+                    + "The usual causes are a @Transactional method called from inside the "
+                    + "same class (which bypasses the proxy), @Transactional on a private or "
+                    + "final method, a class that is not a Spring bean, or the annotation "
+                    + "simply being absent.");
 
     private final String label;
     private final String remediation;

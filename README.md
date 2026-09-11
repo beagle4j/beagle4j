@@ -10,7 +10,8 @@ English · [简体中文](README.zh-CN.md)
 
 Beagle watches the JDBC traffic your application actually produces and tells you when it
 is doing something that will not survive contact with real data — an N+1 query, the same
-row fetched five times in one request, a statement that has quietly become slow.
+row fetched five times in one request, a statement that has quietly become slow, or a
+transaction you thought you had and do not.
 
 It works with **Hibernate, JPA, MyBatis, jOOQ, JdbcTemplate or raw JDBC**, because it
 watches the layer underneath all of them.
@@ -56,8 +57,8 @@ Beagle is that tool for the JVM, plus the ones Rails never needed to worry about
 | **N+1 queries** | ✅ | Correlates repeats against the parent's row count — see below |
 | **Repeated identical reads** | ✅ | Captures bind parameters, so it can prove the answer could not have changed |
 | **Slow statements** | ✅ | Measured, not guessed |
+| **Writes that were never in a transaction** | ✅ | Catches every way `@Transactional` fails silently — see below |
 | Unused eager loading | 🚧 | Fetched a collection nobody read |
-| `@Transactional` that silently does nothing | 🚧 | Self-invocation, caught at runtime instead of guessed at by a linter |
 | Remote calls inside a transaction | 🚧 | The number one cause of connection-pool exhaustion |
 | Unbatched write loops | 🚧 | A different bug from N+1, reported as its own thing |
 
@@ -157,6 +158,39 @@ Three further rules keep the noise down:
 - **The parent search steps over siblings.** When a loop body issues two queries per row,
   the statement before the second one is the first child, not the parent.
 
+## Checking the symptom, not the annotation
+
+Spring's declarative transactions fail silently in several well-known ways. The famous one
+is calling a `@Transactional` method from inside the same class, which bypasses the proxy;
+there is also the annotation on a `private` or `final` method, a class that was never a
+Spring bean, and simply forgetting it.
+
+Static analysis chases each of these separately, and gets the answer wrong in both
+directions — it cannot see a self-call deliberately routed through
+`AopContext.currentProxy()`, and it cannot see a bean proxied at runtime by something it
+does not model.
+
+**Beagle never looks at the annotation.** It checks whether a transaction actually
+happened. All of those failure modes produce the same observable symptom — statements
+running with autocommit on — and the symptom is the thing that loses your data. Catching
+the symptom catches every cause at once, including the ones nobody has written a lint rule
+for yet:
+
+```
+  WRITES OUTSIDE A TRANSACTION                              critical · confirmed
+  2 writes that could be left half-applied
+
+  first     OrderService#placeOrder  (OrderService.java:58)
+  writes    insert into orders (id, customer_id, total) values (?, ?, ?)
+            update inventory set stock = stock - ? where sku = ?
+```
+
+The rule fires on **two or more writes using different statements**, all outside a
+transaction, in one unit of work. The "different statements" part matters: a loop
+inserting a thousand rows with autocommit on is one statement repeated, which is a
+batching question rather than a lost unit of work, and reporting it would make the rule
+useless for the case it exists to catch.
+
 ## Performance
 
 Stack capture is the expensive part of a tool like this, so Beagle only pays for it where
@@ -185,8 +219,8 @@ a hand-written SQL scanner instead of a regex or a parser, why `ThreadLocal` ins
 
 **Early. Version 0.1.0, not yet on Maven Central.** The detection engine, the JDBC
 instrumentation, the console reporter and the Spring Boot starter all work and are covered
-by 31 tests, including end-to-end detection against a real database. The transaction
-detectors, a JMH benchmark and an HTML report are next.
+by 35 tests, including end-to-end detection against a real database. A JMH benchmark, the
+remaining detectors and an HTML report are next.
 
 Issues and pull requests are welcome, particularly reports of false positives — those are
 the bugs that matter most in a tool like this.

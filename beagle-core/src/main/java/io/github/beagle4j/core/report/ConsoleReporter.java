@@ -169,29 +169,12 @@ public final class ConsoleReporter {
 
         out.append("  ").append(headline(finding)).append('\n').append('\n');
 
-        if (finding.parentCallSite() != null) {
-            field(out, "parent", location(finding.parentCallSite()));
-            field(out, "", colorise(finding.parentSqlTemplate(), DIM)
-                    + colorise("   " + arrow + " " + finding.parentRowCount() + " rows", BLUE));
-        }
-
-        String repeatLabel = finding.occurrences() > 1 ? "repeated" : "query";
-        field(out, repeatLabel, location(finding.callSite())
-                + (finding.occurrences() > 1
-                ? colorise("   x" + finding.occurrences(), BOLD + severityColor(finding.severity()))
-                : ""));
-        field(out, "", colorise(finding.sqlTemplate(), DIM));
-
-        List<String> samples = finding.sampleStatements();
-        for (int i = 0; i < Math.min(MAX_SAMPLES_SHOWN, samples.size()); i++) {
-            field(out, "", colorise("e.g. " + samples.get(i), DIM));
-        }
-        if (samples.size() > MAX_SAMPLES_SHOWN) {
-            field(out, "", colorise(ellipsis + " and " + (finding.occurrences() - MAX_SAMPLES_SHOWN)
-                    + " more", DIM));
-        }
-        if (finding.totalDurationMillis() > 0) {
-            field(out, "", colorise(finding.totalDurationMillis() + "ms total", DIM));
+        // The evidence for "one statement ran too many times" and for "several different
+        // statements ran unprotected" reads nothing alike, and forcing both through one
+        // layout produced a report that labelled two distinct writes as "repeated x2".
+        switch (finding.type()) {
+            case WRITE_OUTSIDE_TRANSACTION -> renderWriteEvidence(out, finding);
+            default -> renderRepeatEvidence(out, finding);
         }
 
         if (finding.detail() != null) {
@@ -201,12 +184,61 @@ public final class ConsoleReporter {
         field(out, "fix", finding.remediation());
     }
 
+    /** One statement, run more times than it should have been. */
+    private void renderRepeatEvidence(StringBuilder out, Finding finding) {
+        if (finding.parentCallSite() != null) {
+            field(out, "parent", location(finding.parentCallSite()));
+            field(out, "", colorise(finding.parentSqlTemplate(), DIM)
+                    + colorise("   " + arrow + " " + finding.parentRowCount() + " rows", BLUE));
+        }
+
+        String label = finding.occurrences() > 1 ? "repeated" : "query";
+        field(out, label, location(finding.callSite())
+                + (finding.occurrences() > 1
+                ? colorise("   x" + finding.occurrences(), BOLD + severityColor(finding.severity()))
+                : ""));
+        field(out, "", colorise(finding.sqlTemplate(), DIM));
+
+        List<String> samples = finding.sampleStatements();
+        for (int i = 0; i < Math.min(MAX_SAMPLES_SHOWN, samples.size()); i++) {
+            field(out, "", colorise("e.g. " + samples.get(i), DIM));
+        }
+        if (finding.occurrences() > MAX_SAMPLES_SHOWN) {
+            field(out, "", colorise(ellipsis + " and "
+                    + (finding.occurrences() - MAX_SAMPLES_SHOWN) + " more", DIM));
+        }
+        renderTiming(out, finding);
+    }
+
+    /** Several different statements, none of them protected. */
+    private void renderWriteEvidence(StringBuilder out, Finding finding) {
+        field(out, "first", location(finding.callSite()));
+
+        List<String> statements = finding.sampleStatements();
+        for (int i = 0; i < statements.size(); i++) {
+            field(out, i == 0 ? "writes" : "", colorise(statements.get(i), DIM));
+        }
+        if (finding.occurrences() > statements.size()) {
+            field(out, "", colorise(finding.occurrences()
+                    + " write executions in total", DIM));
+        }
+        renderTiming(out, finding);
+    }
+
+    private void renderTiming(StringBuilder out, Finding finding) {
+        if (finding.totalDurationMillis() > 0) {
+            field(out, "", colorise(finding.totalDurationMillis() + "ms total", DIM));
+        }
+    }
+
     private String headline(Finding finding) {
         return switch (finding.type()) {
             case N_PLUS_ONE -> (finding.occurrences() + 1) + " queries where 2 would do";
             case REPEATED_IDENTICAL_QUERY -> finding.occurrences()
                     + " executions of a query whose answer cannot have changed";
             case SLOW_QUERY -> "one query took " + finding.totalDurationMillis() + "ms";
+            case WRITE_OUTSIDE_TRANSACTION -> finding.occurrences()
+                    + " writes that could be left half-applied";
         };
     }
 

@@ -108,6 +108,8 @@ public final class Finding {
             case REPEATED_IDENTICAL_QUERY -> "identical query ran " + occurrences
                     + " times at " + callSite;
             case SLOW_QUERY -> "query took " + totalDurationMillis + "ms at " + callSite;
+            case WRITE_OUTSIDE_TRANSACTION -> occurrences
+                    + " writes ran outside any transaction, starting at " + callSite;
         };
     }
 

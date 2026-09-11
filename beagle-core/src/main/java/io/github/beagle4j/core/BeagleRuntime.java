@@ -5,6 +5,7 @@ import io.github.beagle4j.core.detect.DetectionContext;
 import io.github.beagle4j.core.detect.DetectionReport;
 import io.github.beagle4j.core.detect.Detector;
 import io.github.beagle4j.core.detect.NPlusOneDetector;
+import io.github.beagle4j.core.detect.NonTransactionalWriteDetector;
 import io.github.beagle4j.core.detect.RepeatedQueryDetector;
 import io.github.beagle4j.core.detect.SlowQueryDetector;
 import io.github.beagle4j.core.model.Finding;
@@ -58,7 +59,11 @@ public final class BeagleRuntime {
     }
 
     public static List<Detector> defaultDetectors() {
-        return List.of(new NPlusOneDetector(), new RepeatedQueryDetector(), new SlowQueryDetector());
+        return List.of(
+                new NPlusOneDetector(),
+                new RepeatedQueryDetector(),
+                new NonTransactionalWriteDetector(),
+                new SlowQueryDetector());
     }
 
     public BeagleConfig config() {

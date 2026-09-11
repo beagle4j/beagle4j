@@ -214,3 +214,43 @@ exception inside Beagle cannot reach the application.
 **Why.** Observability that can break the thing it observes is not worth having. A
 detector that throws is logged and skipped; a recording failure is swallowed and the query
 runs regardless. The request matters, the diagnostics do not.
+
+---
+
+## 11. Detecting the symptom, not the annotation
+
+**Decision.** There is no `@Transactional` self-invocation detector. There is a rule that
+reports several different writes running in one unit of work with autocommit on.
+
+**Why the reframing is an improvement, not a compromise.** The obvious feature request is
+"catch self-invocation", and the obvious implementation needs bytecode: a self-call does
+not pass through the proxy, so no AOP advice can observe it. That would mean an agent,
+and an agent means a launch-flag change — the thing section 1 exists to avoid.
+
+But self-invocation is only one of the ways a Spring transaction silently fails. The
+annotation on a `private` or `final` method fails. A class that was never a Spring bean
+fails. Forgetting the annotation fails. A linter has to model each of these separately and
+gets both directions wrong — it cannot see a self-call deliberately routed through
+`AopContext.currentProxy()`, and it cannot see a bean proxied at runtime by a mechanism it
+does not know about.
+
+Every one of those causes produces the same observable symptom: statements executing with
+autocommit on. The symptom is also the thing that actually loses data. So the rule checks
+for the symptom, which catches every cause at once — including the ones nobody has written
+a lint rule for yet — and needs no bytecode to do it.
+
+**The discriminator.** Two or more writes using *different* statement templates. One
+template repeated is a batch loop with autocommit on: a batching question, not a lost unit
+of work, and reporting it would cost the rule the credibility it needs for the case it
+exists to catch.
+
+**Why the transaction flag is read at execution time.** Statements are routinely prepared
+on the other side of a transaction boundary from where they run — Spring opens the
+transaction around the service method while the ORM prepares statements inside it, and a
+cached statement can outlive several transactions. Sampling `autoCommit` when the
+statement is created puts writes on the wrong side of the boundary and the rule silently
+stops working. It is therefore passed as a `BooleanSupplier` and evaluated on execute.
+
+**Limitation.** A pool configured with `autoCommit=false` globally never shows the
+symptom, so the rule reports nothing. That is a false negative, which is the safe
+direction to fail in.

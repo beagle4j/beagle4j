@@ -135,6 +135,74 @@ public class BookstoreService {
         }
     }
 
+    /**
+     * Two different writes that belong together, with autocommit left on. This is what
+     * every silent transaction failure looks like from the database's point of view --
+     * a {@code @Transactional} method called from inside its own class, the annotation on
+     * a private method, a class that was never a Spring bean, or no annotation at all.
+     */
+    public void addBookAndTouchAuthor_noTransaction(int authorId, int bookId) {
+        try (Connection connection = dataSource.getConnection()) {
+            insertBook(connection, authorId, bookId);
+            markAuthorUpdated(connection, authorId);
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /** The same two writes, actually made atomic. */
+    public void addBookAndTouchAuthor_inTransaction(int authorId, int bookId) {
+        Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+            connection.setAutoCommit(false);
+            try {
+                insertBook(connection, authorId, bookId);
+                markAuthorUpdated(connection, authorId);
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        } finally {
+            closeQuietly(connection);
+        }
+    }
+
+    private void insertBook(Connection connection, int authorId, int bookId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "INSERT INTO book (id, author_id, title) VALUES (?, ?, ?)")) {
+            statement.setInt(1, bookId);
+            statement.setInt(2, authorId);
+            statement.setString(3, "Book " + bookId);
+            statement.executeUpdate();
+        }
+    }
+
+    private void markAuthorUpdated(Connection connection, int authorId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "UPDATE author SET name = ? WHERE id = ?")) {
+            statement.setString(1, "Author " + authorId + " (updated)");
+            statement.setInt(2, authorId);
+            statement.executeUpdate();
+        }
+    }
+
+    private static void closeQuietly(Connection connection) {
+        if (connection == null) {
+            return;
+        }
+        try {
+            connection.close();
+        } catch (SQLException ignored) {
+            // Nothing useful to do in a test fixture.
+        }
+    }
+
     public record Author(int id, String name, List<Book> books) {
     }
 

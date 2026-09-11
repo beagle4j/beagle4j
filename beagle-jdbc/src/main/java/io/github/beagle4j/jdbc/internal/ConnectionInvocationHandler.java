@@ -61,8 +61,11 @@ public final class ConnectionInvocationHandler implements InvocationHandler {
         if (statement == null) {
             return null;
         }
+        // The transaction flag is passed as a supplier rather than a value: this handler
+        // keeps watching `setAutoCommit` after the statement is created, and the answer
+        // that matters is the one at execution time.
         return Proxies.wrap(statement,
-                new StatementInvocationHandler(statement, sql, isInsideTransaction()));
+                new StatementInvocationHandler(statement, sql, this::isInsideTransaction));
     }
 
     private boolean isInsideTransaction() {

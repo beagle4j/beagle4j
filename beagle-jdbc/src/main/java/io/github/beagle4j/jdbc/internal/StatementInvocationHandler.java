@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * Observes one {@code Statement}, {@code PreparedStatement} or {@code CallableStatement}.
@@ -26,14 +27,25 @@ public final class StatementInvocationHandler implements InvocationHandler {
     private final Object delegate;
     private final String preparedSql;
     private final ParameterRecorder parameters = new ParameterRecorder();
-    private final boolean insideTransaction;
+    private final BooleanSupplier transactionState;
 
     private QueryExecution lastExecution;
 
-    public StatementInvocationHandler(Object delegate, String preparedSql, boolean insideTransaction) {
+    /**
+     * @param transactionState evaluated at execution time, not here. A statement is
+     *                         frequently prepared before the transaction that will run it
+     *                         has begun -- Spring opens the transaction around the service
+     *                         method while the ORM prepares statements inside it, and a
+     *                         cached statement can outlive several transactions. Sampling
+     *                         the flag at construction would attribute writes to the wrong
+     *                         side of the boundary, which is exactly the distinction the
+     *                         transaction detectors depend on.
+     */
+    public StatementInvocationHandler(Object delegate, String preparedSql,
+                                      BooleanSupplier transactionState) {
         this.delegate = delegate;
         this.preparedSql = preparedSql;
-        this.insideTransaction = insideTransaction;
+        this.transactionState = transactionState;
     }
 
     @Override
@@ -84,7 +96,7 @@ public final class StatementInvocationHandler implements InvocationHandler {
         try {
             execution = session.recordQueryStart(sql);
             if (execution != null) {
-                execution.insideTransaction(insideTransaction);
+                execution.insideTransaction(transactionState.getAsBoolean());
                 List<String> bound = parameters.snapshot();
                 if (!bound.isEmpty()) {
                     execution.parameters(bound);
