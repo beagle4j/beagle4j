@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.beagle4j</groupId>
+    <artifactId>beagle4j-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>beagle-jdbc</artifactId>
+  <name>Beagle4J :: JDBC</name>
+  <description>
+    Transparent JDBC instrumentation. Wraps a DataSource in dynamic proxies so that
+    statements, bind parameters and rows read are observed without the application,
+    the ORM or the connection pool being aware of it.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.github.beagle4j</groupId>
+      <artifactId>beagle-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
