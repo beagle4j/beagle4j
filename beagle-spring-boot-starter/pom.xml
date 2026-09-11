@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>io.github.beagle4j</groupId>
+    <artifactId>beagle4j-parent</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>beagle-spring-boot-starter</artifactId>
+  <name>Beagle4J :: Spring Boot Starter</name>
+  <description>
+    Auto-configuration. Add the dependency and every DataSource in the context is
+    instrumented and every HTTP request becomes an observed unit of work.
+  </description>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.github.beagle4j</groupId>
+      <artifactId>beagle-jdbc</artifactId>
+    </dependency>
+
+    <!--
+      Spring is `provided`, and deliberately pinned to the OLDEST supported line rather
+      than the newest. Compiling against 3.5 and resolving the real version from the
+      application at runtime yields one artifact that works on both Spring Boot 3.x and
+      4.x; compiling against 4.x would silently drop every 3.x user, which is most of
+      the installed base.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-autoconfigure</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <!-- Optional: the servlet filter is only configured when a servlet stack is present. -->
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>6.0.0</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <version>${spring-boot.version}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-test</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

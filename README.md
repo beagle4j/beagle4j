@@ -61,15 +61,50 @@ Beagle is that tool for the JVM, plus the ones Rails never needed to worry about
 
 ## Quick start
 
+### Spring Boot
+
+Add the dependency. That is the whole installation.
+
 ```xml
 <dependency>
   <groupId>io.github.beagle4j</groupId>
-  <artifactId>beagle-jdbc</artifactId>
+  <artifactId>beagle-spring-boot-starter</artifactId>
   <version>0.1.0</version>
 </dependency>
 ```
 
-Wrap your data source, and observe a unit of work:
+Every `DataSource` in the context gets instrumented and every HTTP request becomes an
+observed unit of work. One setting is worth adding, because it makes attribution to your
+own code much more reliable:
+
+```yaml
+beagle:
+  application-package: com.acme
+```
+
+Findings are written to the log when a request produces any. All twenty settings have IDE
+autocompletion; the ones you are most likely to want:
+
+```yaml
+beagle:
+  enabled: true                 # false disables everything, wrapper included
+  n-plus-one-threshold: 3       # repeats before a statement is suspicious
+  slow-query-threshold: 200ms   # 0 disables the slow-query rule
+  excluded-data-sources: []     # bean names to leave alone
+  web:
+    excluded-paths: ["/actuator/**", "/static/**"]
+```
+
+> **One caveat, stated plainly.** Beagle replaces each `DataSource` bean with a wrapper.
+> Code that injects the interface is unaffected — that is almost all code — but anything
+> injecting a *concrete* type (`HikariDataSource`, to read pool statistics) will no longer
+> match. `unwrap()` still reaches the original, and `beagle.excluded-data-sources` opts a
+> named bean out.
+
+### Anything else
+
+`beagle-core` and `beagle-jdbc` have no Spring dependency, so the same engine works from
+MyBatis standalone, Quarkus, Micronaut, a test harness, or plain JDBC:
 
 ```java
 DataSource observed = BeagleDataSource.wrap(myDataSource);
@@ -146,9 +181,10 @@ a hand-written SQL scanner instead of a regex or a parser, why `ThreadLocal` ins
 
 ## Status
 
-**Early. Version 0.1.0, not yet on Maven Central.** The core engine, the JDBC
-instrumentation and the console reporter work and are covered by tests against a real
-database. The Spring Boot starter, the transaction detectors and the HTML report are next.
+**Early. Version 0.1.0, not yet on Maven Central.** The detection engine, the JDBC
+instrumentation, the console reporter and the Spring Boot starter all work and are covered
+by 31 tests, including end-to-end detection against a real database. The transaction
+detectors, a JMH benchmark and an HTML report are next.
 
 Issues and pull requests are welcome, particularly reports of false positives — those are
 the bugs that matter most in a tool like this.

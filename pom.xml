@@ -28,6 +28,7 @@
   <modules>
     <module>beagle-core</module>
     <module>beagle-jdbc</module>
+    <module>beagle-spring-boot-starter</module>
   </modules>
 
   <properties>
