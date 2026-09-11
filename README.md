@@ -66,6 +66,14 @@ Beagle is that tool for the JVM, plus the ones Rails never needed to worry about
 
 ### Spring Boot
 
+> ⚠️ **Not on Maven Central yet.** The coordinates below are what the first release will
+> use; until it lands, `mvn install` from a clone. Publishing is configured and waiting on
+> namespace verification — see [docs/RELEASING.md](docs/RELEASING.md).
+>
+> ```bash
+> git clone https://github.com/beagle4j/beagle4j.git && cd beagle4j && mvn install -DskipTests
+> ```
+
 Add the dependency. That is the whole installation.
 
 ```xml

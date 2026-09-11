@@ -68,6 +68,14 @@ Beagle 想做 JVM 上的那个工具，并且补上 Rails 根本不需要操心�
 
 ### Spring Boot
 
+> ⚠️ **还没发布到 Maven Central。** 下面的坐标是首个版本将要使用的，在那之前请
+> clone 下来 `mvn install`。发布链路已配好，正在等命名空间验证——
+> 见 [docs/RELEASING.md](docs/RELEASING.md)。
+>
+> ```bash
+> git clone https://github.com/beagle4j/beagle4j.git && cd beagle4j && mvn install -DskipTests
+> ```
+
 加一个依赖，装完了。
 
 ```xml

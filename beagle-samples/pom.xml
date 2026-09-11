@@ -15,8 +15,13 @@
   <name>Beagle4J :: Samples</name>
   <description>Runnable demonstrations. Not published.</description>
 
+  <!-- Inherited by every sample. See beagle-benchmark/pom.xml for why all four. -->
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
+    <skipPublishing>true</skipPublishing>
+    <gpg.skip>true</gpg.skip>
+    <maven.source.skip>true</maven.source.skip>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
   </properties>
 
   <modules>

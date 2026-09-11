@@ -19,7 +19,21 @@
 
   <properties>
     <jmh.version>1.37</jmh.version>
+
+    <!--
+      Not published. This module is a measuring instrument, not something anyone should
+      depend on, and an artifact on Central can never be withdrawn.
+
+      All four flags are needed, because they switch off four different plugins:
+      `maven.deploy.skip` for the classic deploy, `skipPublishing` for the Central
+      portal plugin that replaces it, and the other two so the release build does not
+      spend time signing and documenting something it is about to discard.
+    -->
     <maven.deploy.skip>true</maven.deploy.skip>
+    <skipPublishing>true</skipPublishing>
+    <gpg.skip>true</gpg.skip>
+    <maven.source.skip>true</maven.source.skip>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
   </properties>
 
   <dependencies>
