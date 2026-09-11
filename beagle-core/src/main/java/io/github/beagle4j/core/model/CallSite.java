@@ -29,6 +29,36 @@ public record CallSite(String className, String methodName, String fileName, int
         return idx < 0 ? className : className.substring(idx + 1);
     }
 
+    /**
+     * The method name as a developer would write it.
+     *
+     * <p>Work done inside a lambda runs in a synthetic method the compiler names
+     * {@code lambda$slow$0}, and that is what appears on the stack. It is accurate and it
+     * is unhelpful: a report pointing at {@code AuthorController#lambda$slow$0} makes a
+     * reader stop and work out what they are looking at, when the answer is simply
+     * "inside {@code slow()}" -- which the line number already pins down exactly.
+     *
+     * <p>The raw name stays available from {@link #methodName()}; only the rendering
+     * changes.
+     */
+    public String displayMethodName() {
+        if (!methodName.startsWith("lambda$")) {
+            return methodName;
+        }
+        int start = methodName.indexOf('$') + 1;
+        int end = methodName.lastIndexOf('$');
+        if (end <= start) {
+            return methodName;
+        }
+        String enclosing = methodName.substring(start, end);
+        // javac names a lambda nested inside another lambda `lambda$null$1`, which would
+        // render as "null". Better to show the synthetic name than a misleading one.
+        if (enclosing.isEmpty() || enclosing.equals("null") || enclosing.contains("$")) {
+            return methodName;
+        }
+        return enclosing;
+    }
+
     public boolean isKnown() {
         return !UNKNOWN.className().equals(className);
     }
@@ -36,9 +66,10 @@ public record CallSite(String className, String methodName, String fileName, int
     /** Renders as {@code com.acme.OrderService#loadItems(OrderService.java:42)}. */
     @Override
     public String toString() {
+        String method = displayMethodName();
         if (fileName == null || lineNumber < 0) {
-            return className + "#" + methodName;
+            return className + "#" + method;
         }
-        return className + "#" + methodName + "(" + fileName + ":" + lineNumber + ")";
+        return className + "#" + method + "(" + fileName + ":" + lineNumber + ")";
     }
 }

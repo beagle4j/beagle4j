@@ -1,0 +1,71 @@
+name: False positive
+description: Beagle reported something that is not a problem
+title: "[False positive] "
+labels: ["false-positive"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you — this is the most valuable kind of report this project can receive.
+
+        A performance tool lives or dies on whether developers trust it. One finding that
+        turns out to be wrong costs more than ten it got right, because it teaches people
+        to skim past the whole report. Every one of these gets treated as a real bug.
+
+  - type: textarea
+    id: report
+    attributes:
+      label: What Beagle reported
+      description: Paste the finding, including the confidence and severity line.
+      render: text
+      placeholder: |
+        ── Beagle · GET /orders · 14 queries, 63ms ─────────────────────────
+          N+1 QUERY                                  critical · confirmed
+          ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it is not a problem
+      description: >
+        What is the code actually doing, and why is this shape intentional or harmless?
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: The code it pointed at
+      description: >
+        The smallest version that still triggers it. Rough pseudocode is fine — please do
+        not paste anything proprietary.
+      render: java
+    validations:
+      required: false
+
+  - type: input
+    id: persistence
+    attributes:
+      label: Persistence layer
+      placeholder: "Hibernate 6.6 / MyBatis 3.5 / JdbcTemplate / jOOQ ..."
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Beagle, Java and Spring Boot versions
+      placeholder: "Beagle 0.1.0, Java 21, Spring Boot 3.5.16"
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Your beagle.* configuration
+      description: Especially any thresholds you changed from the defaults.
+      render: yaml
+    validations:
+      required: false

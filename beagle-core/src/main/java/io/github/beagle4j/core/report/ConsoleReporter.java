@@ -267,7 +267,7 @@ public final class ConsoleReporter {
         if (!site.isKnown()) {
             return colorise("<call site not captured>", DIM);
         }
-        String where = site.simpleClassName() + "#" + site.methodName();
+        String where = site.simpleClassName() + "#" + site.displayMethodName();
         String at = site.fileName() != null && site.lineNumber() > 0
                 ? "  (" + site.fileName() + ":" + site.lineNumber() + ")"
                 : "";

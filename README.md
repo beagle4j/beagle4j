@@ -120,8 +120,8 @@ DetectionReport report = beagle.observe("GET /authors", () -> service.listAuthor
 System.out.println(new ConsoleReporter().render(report));
 ```
 
-Outside an open session the instrumentation costs one null check per statement, so
-leaving it wired up in an environment where it is switched off is not a problem.
+Outside an open session nothing is recorded. See [Performance](#performance) for what the
+wrapper still costs when it is not observing — it is small, but it is not nothing.
 
 ## Why counting queries is not enough
 
@@ -206,8 +206,27 @@ it can change a conclusion:
 It uses `StackWalker` rather than `new Throwable().getStackTrace()`, which streams frames
 lazily instead of materialising an 80-frame Spring stack in full.
 
-> **Benchmarks are not published yet.** A JMH suite is the next thing on the roadmap; until
-> the numbers exist, treat the design above as intent rather than as a measured claim.
+### Measured
+
+One `SELECT` returning 50 rows, every row consumed, against **H2 in memory** — deliberately
+the harshest baseline available, since a real database would bury the overhead entirely:
+
+| Case | µs/op | vs raw |
+|---|---:|---:|
+| Raw JDBC, no wrapper | 6.71 | — |
+| Wrapped, not observing | 7.12 | **+0.41 µs** (~2.6 ns per intercepted JDBC call) |
+| Wrapped, observing | 10.14 | **+3.4 µs per statement** |
+
+The overhead is roughly **fixed at ~3.4 µs per observed statement**, so the percentage
+depends entirely on what it is a percentage of: 51% of an in-memory H2 query, 0.34% of a
+1 ms query, 0.07% of the 5 ms query you actually wanted to hear about.
+
+The design decisions hold up under measurement too — `StackWalker` costs 16% more at 80
+frames than at 20, where `new Throwable()` costs 100% more, and a normalisation cache hit
+is 2.3 ns.
+
+**[Full numbers, method, and the two bugs this benchmark had before it was
+trustworthy →](docs/BENCHMARKS.md)**
 
 ## Design notes
 

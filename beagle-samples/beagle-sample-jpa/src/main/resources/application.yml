@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:bookshop;DB_CLOSE_DELAY=-1
+    username: sa
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: true
+
+beagle:
+  # Without this, attribution falls back to guessing which frames are yours.
+  application-package: com.example.bookshop
+
+logging:
+  level:
+    root: WARN
+    com.example.bookshop: INFO
+    io.github.beagle4j: INFO
+  pattern:
+    console: "%clr(%-5p){faint} %m%n"

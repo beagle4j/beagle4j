@@ -1,0 +1,57 @@
+name: Missed problem
+description: Beagle stayed quiet about something it should have caught
+title: "[Missed] "
+labels: ["false-negative"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Beagle deliberately errs on the side of silence — a tool that cries wolf gets
+        muted, and a muted tool catches nothing. So some misses are by design.
+
+        If this turns out to be one of those, the answer will say which rule chose to stay
+        quiet and why, which is useful either way.
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should have been reported
+      description: What is the problem, and roughly how many queries did it cause?
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: The code
+      render: java
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What Beagle said instead
+      description: >
+        Paste the report, or say "nothing at all". Setting the logger
+        `io.github.beagle4j.Report` to DEBUG shows the sessions that produced no findings,
+        which confirms Beagle was watching at all.
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: persistence
+    attributes:
+      label: Persistence layer
+      placeholder: "Hibernate 6.6 / MyBatis 3.5 / JdbcTemplate / jOOQ ..."
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Beagle, Java and Spring Boot versions
+      placeholder: "Beagle 0.1.0, Java 21, Spring Boot 3.5.16"
+    validations:
+      required: true
