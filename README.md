@@ -3,6 +3,7 @@
 **Finds the database bugs that compile, pass your tests, and fall over in production.**
 
 [![Build](https://github.com/beagle4j/beagle4j/actions/workflows/ci.yml/badge.svg)](https://github.com/beagle4j/beagle4j/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.beagle4j/beagle-spring-boot-starter.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.beagle4j/beagle-spring-boot-starter)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://adoptium.net/)
 
@@ -244,7 +245,7 @@ a hand-written SQL scanner instead of a regex or a parser, why `ThreadLocal` ins
 
 ## Status
 
-**Early. Version 0.1.0, not yet on Maven Central.** The detection engine, the JDBC
+**Early. Version 0.1.0 is on Maven Central, and nobody is using it in anger yet.** The detection engine, the JDBC
 instrumentation, the console reporter and the Spring Boot starter all work and are covered
 by 35 tests, including end-to-end detection against a real database. A JMH benchmark, the
 remaining detectors and an HTML report are next.

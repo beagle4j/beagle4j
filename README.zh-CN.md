@@ -3,6 +3,7 @@
 **专抓那些"代码能跑、测试能过、上线必炸"的数据库问题。**
 
 [![Build](https://github.com/beagle4j/beagle4j/actions/workflows/ci.yml/badge.svg)](https://github.com/beagle4j/beagle4j/actions/workflows/ci.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.beagle4j/beagle-spring-boot-starter.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/io.github.beagle4j/beagle-spring-boot-starter)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://adoptium.net/)
 
@@ -229,7 +230,7 @@ Spring 的声明式事务有好几种静默失效的方式。最有名的是**�
 
 ## 项目状态
 
-**早期阶段，0.1.0 版本，尚未发布到 Maven Central。** 检测引擎、JDBC 拦截层、
+**早期阶段。0.1.0 已发布到 Maven Central，但还没有真实项目在用。** 检测引擎、JDBC 拦截层、
 控制台报告器和 Spring Boot Starter 都已可用，有 35 个测试覆盖，包含针对真实数据库的
 端到端检测。接下来是 JMH 基准测试、剩余的检测规则和 HTML 报告。
 
