@@ -6,6 +6,8 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://adoptium.net/)
 
+English · [简体中文](README.zh-CN.md)
+
 Beagle watches the JDBC traffic your application actually produces and tells you when it
 is doing something that will not survive contact with real data — an N+1 query, the same
 row fetched five times in one request, a statement that has quietly become slow.
